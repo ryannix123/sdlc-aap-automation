@@ -5,3 +5,7 @@ Storage team — NetApp ONTAP volume create/export. Owner: @org/team-storage. Sw
 - Role(s): `storage/roles/`
 - Playbook(s): `storage/playbooks/`
 - Approval: routed automatically by `.github/CODEOWNERS`.
+
+## Contributing to this domain
+
+See [`SDLC.md`](SDLC.md) for the step-by-step workflow: feature branch, lint, Molecule test, pull request, and review.
