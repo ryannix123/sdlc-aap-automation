@@ -1,0 +1,47 @@
+---
+# ---------------------------------------------------------------------------
+# provision_ontap_volume
+# Creates/exports a NetApp ONTAP volume on a ServiceNow request. The live
+# ONTAP call is gated behind storage_check_mode so the role is CI-testable.
+# ---------------------------------------------------------------------------
+
+- name: Validate required inputs
+  ansible.builtin.assert:
+    that:
+      - snow_request_id is defined and snow_request_id | length > 0
+      - svm_name is defined and svm_name | length > 0
+      - volume_size_gb | int > 0
+    fail_msg: "snow_request_id, svm_name, and a positive volume_size_gb are required."
+    success_msg: "Inputs validated for {{ volume_size_gb }}GB volume on SVM {{ svm_name }}."
+
+- name: Provision on ONTAP
+  when: not storage_check_mode
+  block:
+    - name: Create NFS volume
+      netapp.ontap.na_ontap_volume:
+        state: present
+        name: "snow_{{ snow_request_id }}"
+        vserver: "{{ svm_name }}"
+        aggregate_name: "{{ aggregate }}"
+        size: "{{ volume_size_gb }}"
+        size_unit: gb
+        space_guarantee: none
+        policy: "{{ export_policy }}"
+        junction_path: "/snow_{{ snow_request_id }}"
+        hostname: "{{ ontap_host }}"
+        username: "{{ ontap_user }}"
+        password: "{{ ontap_password }}"
+        https: true
+        validate_certs: true
+      register: vol
+
+    - name: Set facts from live result
+      ansible.builtin.set_fact:
+        provisioned_name: "snow_{{ snow_request_id }}"
+        provisioned_ip: "/snow_{{ snow_request_id }}"
+
+- name: Simulate the ONTAP result (check mode)
+  when: storage_check_mode
+  ansible.builtin.set_fact:
+    provisioned_name: "snow_{{ snow_request_id }}"
+    provisioned_ip: "/snow_{{ snow_request_id }}"

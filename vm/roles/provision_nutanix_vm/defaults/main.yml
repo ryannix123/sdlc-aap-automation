@@ -1,0 +1,7 @@
+---
+vcpus: 2
+memory_gb: 8
+disk_gb: 50
+
+# Test/dry-run gate (skips the live Prism Central call in CI).
+vm_check_mode: false

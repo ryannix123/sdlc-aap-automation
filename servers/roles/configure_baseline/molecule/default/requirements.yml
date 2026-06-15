@@ -1,0 +1,5 @@
+---
+# Installed by Molecule's dependency step in CI (creator-ee has network access).
+collections:
+  - name: ansible.windows
+  - name: redhat.rhel_system_roles

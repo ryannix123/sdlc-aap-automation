@@ -1,0 +1,52 @@
+---
+# ---------------------------------------------------------------------------
+# provision_nutanix_vm
+# Provisions a VM via Prism Central on a ServiceNow request. The live Prism
+# call is gated behind vm_check_mode so the role is testable in CI.
+# ---------------------------------------------------------------------------
+
+- name: Validate required inputs
+  ansible.builtin.assert:
+    that:
+      - snow_request_id is defined and snow_request_id | length > 0
+      - cluster_name is defined and cluster_name | length > 0
+      - vcpus | int >= 1
+      - memory_gb | int >= 1
+    fail_msg: "snow_request_id, cluster_name, and positive vcpus/memory_gb are required."
+    success_msg: "Inputs validated for Nutanix VM {{ snow_request_id }} on {{ cluster_name }}."
+
+- name: Provision on Nutanix
+  when: not vm_check_mode
+  block:
+    - name: Create VM in Prism Central
+      nutanix.ncp.ntnx_vms:
+        nutanix_host: "{{ prism_central_host }}"
+        nutanix_username: "{{ prism_user }}"
+        nutanix_password: "{{ prism_password }}"
+        validate_certs: true
+        name: "snow-{{ snow_request_id }}"
+        cluster:
+          name: "{{ cluster_name }}"
+        vcpus: "{{ vcpus }}"
+        memory_gb: "{{ memory_gb }}"
+        networks:
+          - is_connected: true
+            subnet:
+              name: "{{ subnet_name }}"
+        disks:
+          - type: DISK
+            size_gb: "{{ disk_gb }}"
+            clone_image:
+              name: "{{ image_name }}"
+      register: vm
+
+    - name: Set facts from live result
+      ansible.builtin.set_fact:
+        provisioned_name: "{{ vm.response.metadata.uuid }}"
+        provisioned_ip: "{{ vm.response.status.resources.nic_list[0].ip_endpoint_list[0].ip | default('pending') }}"
+
+- name: Simulate the Prism result (check mode)
+  when: vm_check_mode
+  ansible.builtin.set_fact:
+    provisioned_name: "uuid-SIMULATED-{{ snow_request_id }}"
+    provisioned_ip: "172.16.0.20"

@@ -1,0 +1,38 @@
+---
+- name: Converge — exercise manage_dns_record in test mode
+  hosts: localhost
+  gather_facts: false
+  vars:
+    # Test mode: skip the live grid call, exercise all role logic.
+    dns_check_mode: true
+    snow_request_id: "REQ0012345"
+  tasks:
+    - name: Test 1 — create an A record
+      ansible.builtin.include_role:
+        name: manage_dns_record
+      vars:
+        record_type: A
+        record_fqdn: "app01.dev.example.com"
+        record_ip: "10.20.30.40"
+
+    - name: Capture A-record results for verification
+      ansible.builtin.set_fact:
+        cacheable: true
+        a_provisioned_name: "{{ provisioned_name }}"
+        a_provisioned_ip: "{{ provisioned_ip | trim }}"
+        a_record_ref: "{{ dns_record_ref | trim }}"
+
+    - name: Test 2 — create a CNAME record
+      ansible.builtin.include_role:
+        name: manage_dns_record
+      vars:
+        record_type: CNAME
+        record_fqdn: "www.dev.example.com"
+        record_canonical: "app01.dev.example.com"
+
+    - name: Capture CNAME results for verification
+      ansible.builtin.set_fact:
+        cacheable: true
+        cname_provisioned_name: "{{ provisioned_name }}"
+        cname_provisioned_ip: "{{ provisioned_ip | trim }}"
+        cname_record_ref: "{{ dns_record_ref | trim }}"

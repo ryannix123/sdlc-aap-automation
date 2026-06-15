@@ -1,0 +1,70 @@
+---
+# ---------------------------------------------------------------------------
+# manage_dns_record
+# Creates or updates an Infoblox DNS record on a ServiceNow request.
+# The live grid call is gated behind dns_check_mode so the role is testable
+# in CI (Molecule) without real infrastructure.
+# ---------------------------------------------------------------------------
+
+- name: Validate required inputs
+  ansible.builtin.assert:
+    that:
+      - record_fqdn is defined and record_fqdn | length > 0
+      - record_type in ['A', 'CNAME']
+      - (record_type == 'A' and record_ip is defined) or
+        (record_type == 'CNAME' and record_canonical is defined)
+    fail_msg: >-
+      record_fqdn and a valid record_type are required; A records need record_ip,
+      CNAME records need record_canonical.
+    success_msg: "Inputs validated for {{ record_type }} record {{ record_fqdn }}."
+
+# ---- Live path: real Infoblox calls (skipped when dns_check_mode is true) ----
+- name: Manage record on the Infoblox grid
+  when: not dns_check_mode
+  block:
+    - name: Create or update an A (host) record
+      infoblox.nios_modules.nios_host_record:
+        name: "{{ record_fqdn }}"
+        ipv4addrs:
+          - ipv4addr: "{{ record_ip }}"
+        view: "{{ dns_view }}"
+        comment: "Created via ServiceNow {{ snow_request_id | default('manual') }}"
+        state: present
+        provider:
+          host: "{{ infoblox_host }}"
+          username: "{{ infoblox_user }}"
+          password: "{{ infoblox_password }}"
+      register: dns_a
+      when: record_type == 'A'
+
+    - name: Create or update a CNAME record
+      infoblox.nios_modules.nios_cname_record:
+        name: "{{ record_fqdn }}"
+        canonical: "{{ record_canonical }}"
+        view: "{{ dns_view }}"
+        comment: "Created via ServiceNow {{ snow_request_id | default('manual') }}"
+        state: present
+        provider:
+          host: "{{ infoblox_host }}"
+          username: "{{ infoblox_user }}"
+          password: "{{ infoblox_password }}"
+      register: dns_cname
+      when: record_type == 'CNAME'
+
+# ---- Test path: simulate the grid result (used by Molecule) ----
+- name: Simulate the grid result (check mode)
+  when: dns_check_mode
+  ansible.builtin.set_fact:
+    dns_simulated:
+      changed: true
+      record_ref: "record:{{ record_type | lower }}/SIMULATED-{{ record_fqdn }}"
+
+# ---- Common: set the facts the write-back role consumes ----
+- name: Set facts for ticket write-back
+  ansible.builtin.set_fact:
+    provisioned_name: "{{ record_fqdn }}"
+    provisioned_ip: >-
+      {{ record_ip if record_type == 'A' else record_canonical }}
+    dns_record_ref: >-
+      {{ dns_simulated.record_ref if dns_check_mode
+         else (dns_a.id | default(dns_cname.id | default('unknown'))) }}

@@ -1,0 +1,12 @@
+---
+# DNS view to operate in
+dns_view: default
+
+# Record type: A | CNAME (drives which Infoblox module is called)
+record_type: A
+
+# Test/dry-run gate. When true, the live Infoblox API call is skipped and a
+# simulated result is produced instead. Molecule sets this true so the role's
+# own logic (validation, fact-setting, idempotency) is fully exercised in CI
+# WITHOUT a live grid. In production this stays false (the default).
+dns_check_mode: false

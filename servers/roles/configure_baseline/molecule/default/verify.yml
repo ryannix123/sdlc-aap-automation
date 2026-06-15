@@ -1,0 +1,12 @@
+---
+- name: Verify — assert configure_baseline branch logic
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Both OS branches resolved correctly
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['linux_branch'] == "linux"
+          - ansible_facts['windows_branch'] == "windows"
+        fail_msg: "OS-family branch selection did not resolve as expected."
+        success_msg: "Branch logic verified: RedHat->linux, Windows->windows."

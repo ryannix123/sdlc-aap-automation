@@ -1,0 +1,8 @@
+---
+vm_size: t3.medium
+target_env: dev
+
+# Test/dry-run gate. When true, the live AWS API call is skipped and a simulated
+# result is produced so the role's own logic is exercised in CI without AWS.
+# Production default is false.
+cloud_check_mode: false

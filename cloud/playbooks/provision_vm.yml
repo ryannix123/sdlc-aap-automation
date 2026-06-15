@@ -1,0 +1,12 @@
+---
+- name: Provision a cloud VM on request
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Run domain role
+      ansible.builtin.include_role:
+        name: provision_aws_vm
+
+    - name: Write result back to ServiceNow
+      ansible.builtin.include_role:
+        name: servicenow_writeback

@@ -1,0 +1,12 @@
+---
+- name: Provision an ONTAP volume on request
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Run domain role
+      ansible.builtin.include_role:
+        name: provision_ontap_volume
+
+    - name: Write result back to ServiceNow
+      ansible.builtin.include_role:
+        name: servicenow_writeback

@@ -1,0 +1,6 @@
+---
+volume_size_gb: 100
+export_policy: default
+
+# Test/dry-run gate (skips the live ONTAP call in CI).
+storage_check_mode: false

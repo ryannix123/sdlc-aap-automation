@@ -1,0 +1,23 @@
+---
+- name: Verify — assert manage_dns_record produced correct results
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: A record — write-back facts are correct
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['a_provisioned_name'] == "app01.dev.example.com"
+          - ansible_facts['a_provisioned_ip'] == "10.20.30.40"
+          - "'SIMULATED-app01.dev.example.com' in ansible_facts['a_record_ref']"
+          - ansible_facts['a_record_ref'].startswith('record:a/')
+        fail_msg: "A-record path did not set the expected write-back facts."
+        success_msg: "A-record path verified: name, IP, and simulated ref correct."
+
+    - name: CNAME record — write-back facts are correct
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['cname_provisioned_name'] == "www.dev.example.com"
+          - ansible_facts['cname_provisioned_ip'] == "app01.dev.example.com"
+          - ansible_facts['cname_record_ref'].startswith('record:cname/')
+        fail_msg: "CNAME path did not set the expected write-back facts."
+        success_msg: "CNAME path verified: name, canonical, and simulated ref correct."

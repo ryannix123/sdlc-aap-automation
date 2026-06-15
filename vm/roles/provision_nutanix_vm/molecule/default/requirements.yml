@@ -1,0 +1,4 @@
+---
+# Installed by Molecule's dependency step in CI (creator-ee has network access).
+collections:
+  - name: nutanix.ncp

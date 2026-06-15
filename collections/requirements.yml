@@ -1,0 +1,11 @@
+---
+collections:
+  - name: amazon.aws
+  - name: azure.azcollection
+  - name: nutanix.ncp
+  - name: netapp.ontap
+  - name: infoblox.nios_modules
+  - name: ansible.windows
+  - name: redhat.rhel_system_roles
+  - name: servicenow.itsm
+  - name: ansible.eda

@@ -1,0 +1,42 @@
+---
+# ---------------------------------------------------------------------------
+# provision_aws_vm
+# Provisions an EC2 instance on a ServiceNow request. The live AWS call is
+# gated behind cloud_check_mode so the role is testable in CI without AWS.
+# ---------------------------------------------------------------------------
+
+- name: Validate required inputs
+  ansible.builtin.assert:
+    that:
+      - snow_request_id is defined and snow_request_id | length > 0
+      - cloud_region is defined and cloud_region | length > 0
+      - vm_size is defined
+    fail_msg: "snow_request_id, cloud_region, and vm_size are required."
+    success_msg: "Inputs validated for cloud VM {{ snow_request_id }} in {{ cloud_region }}."
+
+- name: Provision on AWS
+  when: not cloud_check_mode
+  block:
+    - name: Launch EC2 instance
+      amazon.aws.ec2_instance:
+        name: "snow-{{ snow_request_id }}"
+        instance_type: "{{ vm_size }}"
+        image_id: "{{ ami_id }}"
+        region: "{{ cloud_region }}"
+        vpc_subnet_id: "{{ subnet_id }}"
+        tags:
+          environment: "{{ target_env }}"
+          requested_via: servicenow
+        wait: true
+      register: ec2
+
+    - name: Set facts from live result
+      ansible.builtin.set_fact:
+        provisioned_name: "{{ ec2.instances[0].instance_id }}"
+        provisioned_ip: "{{ ec2.instances[0].private_ip_address }}"
+
+- name: Simulate the AWS result (check mode)
+  when: cloud_check_mode
+  ansible.builtin.set_fact:
+    provisioned_name: "i-SIMULATED{{ snow_request_id }}"
+    provisioned_ip: "10.0.0.10"

@@ -1,0 +1,6 @@
+---
+# Pulled by Molecule's dependency step in CI (creator-ee has network access).
+# Locally, install once with:
+#   ansible-galaxy collection install -r ../../../../collections/requirements.yml
+collections:
+  - name: infoblox.nios_modules

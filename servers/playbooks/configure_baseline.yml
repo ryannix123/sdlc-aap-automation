@@ -1,0 +1,12 @@
+---
+- name: Day-2 baseline across Win and Linux
+  hosts: "{{ target_group | default('all') }}"
+  gather_facts: true
+  tasks:
+    - name: Run domain role
+      ansible.builtin.include_role:
+        name: configure_baseline
+
+    - name: Write result back to ServiceNow
+      ansible.builtin.include_role:
+        name: servicenow_writeback

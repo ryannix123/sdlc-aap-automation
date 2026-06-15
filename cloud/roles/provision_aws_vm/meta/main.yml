@@ -1,0 +1,8 @@
+---
+galaxy_info:
+  role_name: provision_aws_vm
+  author: team-cloud
+  description: Provision an AWS EC2 instance on ServiceNow request
+  license: MIT
+  min_ansible_version: "2.15"
+dependencies: []

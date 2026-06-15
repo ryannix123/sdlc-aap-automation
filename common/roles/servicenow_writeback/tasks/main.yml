@@ -1,0 +1,16 @@
+---
+# Reusable result write-back. Every domain playbook calls this at the end so the
+# ServiceNow ticket becomes the single source of truth for what happened.
+- name: Update the ServiceNow request with the outcome
+  servicenow.itsm.api:
+    resource: sc_request
+    action: patch
+    sys_id: "{{ snow_request_sys_id }}"
+    data:
+      work_notes: >-
+        Automation complete.
+        Resource: {{ provisioned_name }} ({{ provisioned_ip | default('n/a') }}).
+        Launched by AAP job {{ tower_job_id | default('local') }}.
+      state: "3"   # Closed Complete
+  delegate_to: localhost
+  when: snow_request_sys_id is defined

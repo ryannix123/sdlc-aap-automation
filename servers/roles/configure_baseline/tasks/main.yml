@@ -1,0 +1,50 @@
+---
+# ---------------------------------------------------------------------------
+# configure_baseline
+# Day-2 baseline across Windows and Linux. Agentless: Linux over SSH, Windows
+# over WinRM. The OS-specific config calls are gated behind servers_check_mode
+# so the branching logic is CI-testable without real hosts.
+# ---------------------------------------------------------------------------
+
+- name: Determine effective OS family
+  ansible.builtin.set_fact:
+    effective_os_family: >-
+      {{ simulated_os_family if servers_check_mode
+         else ansible_os_family }}
+
+- name: Validate required inputs
+  ansible.builtin.assert:
+    that:
+      - effective_os_family in ['RedHat', 'Debian', 'Windows', 'Suse']
+    fail_msg: "Could not determine a supported OS family (got '{{ effective_os_family }}')."
+    success_msg: "Targeting OS family {{ effective_os_family }}."
+
+# ---- Live OS-specific config (skipped in check mode) ----
+- name: Apply OS baseline
+  when: not servers_check_mode
+  block:
+    - name: Linux — ensure chrony time sync via system role
+      ansible.builtin.include_role:
+        name: redhat.rhel_system_roles.timesync
+      vars:
+        timesync_ntp_servers:
+          - hostname: "{{ ntp_server }}"
+            iburst: true
+      when: effective_os_family != "Windows"
+
+    - name: Windows — ensure a service is running
+      ansible.windows.win_service:
+        name: "{{ windows_service }}"
+        state: started
+        start_mode: auto
+      when: effective_os_family == "Windows"
+
+# ---- Record outcome (runs in both modes) ----
+- name: Record per-host outcome
+  ansible.builtin.set_fact:
+    provisioned_name: "{{ inventory_hostname }}"
+    provisioned_ip: >-
+      {{ ansible_default_ipv4.address | default(ansible_host)
+         if not servers_check_mode else '127.0.0.1' }}
+    baseline_branch_taken: >-
+      {{ 'windows' if effective_os_family == 'Windows' else 'linux' }}

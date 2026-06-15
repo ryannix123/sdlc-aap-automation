@@ -1,0 +1,30 @@
+---
+- name: Converge — exercise configure_baseline for both OS branches
+  hosts: localhost
+  gather_facts: false
+  vars:
+    servers_check_mode: true
+  tasks:
+    - name: Linux branch
+      ansible.builtin.include_role:
+        name: configure_baseline
+      vars:
+        simulated_os_family: "RedHat"
+        ntp_server: "time.example.com"
+
+    - name: Capture Linux branch result
+      ansible.builtin.set_fact:
+        cacheable: true
+        linux_branch: "{{ baseline_branch_taken }}"
+
+    - name: Windows branch
+      ansible.builtin.include_role:
+        name: configure_baseline
+      vars:
+        simulated_os_family: "Windows"
+        windows_service: "W32Time"
+
+    - name: Capture Windows branch result
+      ansible.builtin.set_fact:
+        cacheable: true
+        windows_branch: "{{ baseline_branch_taken }}"

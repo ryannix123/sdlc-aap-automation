@@ -1,0 +1,9 @@
+---
+galaxy_info:
+  role_name: configure_baseline
+  author: server_platform_teams
+  namespace: enterprise
+  description: Day-2 baseline config across Windows and Linux
+  license: MIT
+  min_ansible_version: "2.15"
+dependencies: []

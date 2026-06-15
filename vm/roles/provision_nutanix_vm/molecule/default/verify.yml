@@ -1,0 +1,11 @@
+---
+- name: Verify — assert provision_nutanix_vm results
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Write-back facts are correct
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['vm_name'] == "uuid-SIMULATED-REQ0067890"
+          - ansible_facts['vm_ip'] == "172.16.0.20"
+        success_msg: "Nutanix path verified: VM uuid and IP set correctly."

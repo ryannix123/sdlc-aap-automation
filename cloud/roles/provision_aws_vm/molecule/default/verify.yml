@@ -1,0 +1,11 @@
+---
+- name: Verify — assert provision_aws_vm results
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Write-back facts are correct
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['cloud_name'] == "i-SIMULATEDREQ0012345"
+          - ansible_facts['cloud_ip'] == "10.0.0.10"
+        success_msg: "Cloud path verified: instance id and IP set correctly."

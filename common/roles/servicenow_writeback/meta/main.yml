@@ -1,0 +1,8 @@
+---
+galaxy_info:
+  role_name: servicenow_writeback
+  author: platform-admins
+  description: Writes automation results back to a ServiceNow request
+  license: MIT
+  min_ansible_version: "2.15"
+dependencies: []

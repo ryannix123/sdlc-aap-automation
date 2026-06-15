@@ -1,0 +1,11 @@
+---
+windows_service: W32Time
+
+# Test/dry-run gate. When true, the OS-specific config modules are skipped and
+# the OS branch decision is simulated, so the role's branching logic is tested
+# in CI without real Windows/Linux hosts.
+servers_check_mode: false
+
+# In check mode, simulate this OS family ("RedHat" or "Windows") to exercise
+# each branch. Real runs derive this from gathered facts.
+simulated_os_family: RedHat

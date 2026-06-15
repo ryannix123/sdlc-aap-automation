@@ -1,0 +1,22 @@
+---
+- name: Converge — exercise provision_ontap_volume in test mode
+  hosts: localhost
+  gather_facts: false
+  vars:
+    storage_check_mode: true
+    snow_request_id: "REQ0024680"
+  tasks:
+    - name: Provision an ONTAP volume
+      ansible.builtin.include_role:
+        name: provision_ontap_volume
+      vars:
+        svm_name: "svm_nfs_prod"
+        aggregate: "aggr1"
+        volume_size_gb: 250
+        export_policy: "nfs_clients"
+
+    - name: Capture results for verification
+      ansible.builtin.set_fact:
+        cacheable: true
+        vol_name: "{{ provisioned_name }}"
+        vol_path: "{{ provisioned_ip }}"

@@ -1,0 +1,23 @@
+---
+- name: Converge — exercise provision_nutanix_vm in test mode
+  hosts: localhost
+  gather_facts: false
+  vars:
+    vm_check_mode: true
+    snow_request_id: "REQ0067890"
+  tasks:
+    - name: Provision a Nutanix VM
+      ansible.builtin.include_role:
+        name: provision_nutanix_vm
+      vars:
+        cluster_name: "PROD-CLUSTER-01"
+        subnet_name: "vlan-100"
+        image_name: "rhel9-golden"
+        vcpus: 4
+        memory_gb: 16
+
+    - name: Capture results for verification
+      ansible.builtin.set_fact:
+        cacheable: true
+        vm_name: "{{ provisioned_name }}"
+        vm_ip: "{{ provisioned_ip }}"

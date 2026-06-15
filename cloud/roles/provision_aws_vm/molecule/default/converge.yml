@@ -1,0 +1,21 @@
+---
+- name: Converge — exercise provision_aws_vm in test mode
+  hosts: localhost
+  gather_facts: false
+  vars:
+    cloud_check_mode: true
+    snow_request_id: "REQ0012345"
+  tasks:
+    - name: Provision a cloud VM
+      ansible.builtin.include_role:
+        name: provision_aws_vm
+      vars:
+        cloud_region: "us-east-1"
+        vm_size: "t3.large"
+        target_env: "dev"
+
+    - name: Capture results for verification
+      ansible.builtin.set_fact:
+        cacheable: true
+        cloud_name: "{{ provisioned_name }}"
+        cloud_ip: "{{ provisioned_ip }}"
